@@ -6,13 +6,13 @@ from bson import ObjectId
 
 router= APIRouter()
 
-# @router.get("/")
-# async def read_root():
-#     return {"message": "Hello World"}
-
-@router.head("/")
+@router.get("/")
 async def read_root():
-    return
+    return {"message": "Hello World"}
+
+# @router.head("/")
+# async def read_root():
+#     return
 
 #GET Request Method
 @router.get("/students")

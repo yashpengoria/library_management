@@ -6,6 +6,9 @@ from bson import ObjectId
 
 router= APIRouter()
 
+@router.get("/")
+async def read_root():
+    return {"message": "Hello World"}
 
 #GET Request Method
 @router.get("/students")

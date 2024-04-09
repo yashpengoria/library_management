@@ -1,67 +1,14 @@
-# from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 
+class AddressUpdate(BaseModel):
+    city: Optional[str]
+    country: Optional[str] 
 
-# class Address(BaseModel):
-#     city: str
-#     country: str
-
-
-# class StudentCreate(BaseModel):
-#     name: str
-#     age: int
-#     address: Address
-
-#     class Config:
-#         json_schema_extra = {
-#             "example": {
-#                 "name": "John Doe",
-#                 "age": 25,
-#                 "address": {
-#                     "city": "New York",
-#                     "country": "USA"
-#                 }
-#             }
-#         }
-
-
-# class StudentUpdate(BaseModel):
-#     name: str = None
-#     age: int = None
-#     address: Address = None
-
-#     class Config:
-#         json_schema_extra = {
-#             "example": {
-#                 "name": "Jane Smith",
-#                 "age": 30
-#             }
-#         }
-
-
-# class StudentResponse(BaseModel):
-#     id: str
-#     name: str
-#     age: int
-#     address: Address
-
-#     class Config:
-#         json_schema_extra = {
-#             "example": {
-#                 "id": "6117fc1317deaf103dbd0f68",
-#                 "name": "John Doe",
-#                 "age": 25,
-#                 "address": {
-#                     "city": "New York",
-#                     "country": "USA"
-#                 }
-#             }
-#         }
-
-# def address_serial(address) ->dict:
-#     return{
-#         "city": address["city"],
-#         "country": address["country"]
-#     }
+class StudentUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1)
+    age: Optional[int] = Field(None, gt=0, le=150)
+    address: Optional[AddressUpdate]
 
 def individual_serial(student) ->dict:
     return{

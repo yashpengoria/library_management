@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from models.students import Student, UpdateStudent
+from models.students import Student
 from config.database import collection_name
-from schema.schemas import list_serial
+from schema.schemas import list_serial, StudentUpdate
 from bson import ObjectId
 
 router= APIRouter()
@@ -9,9 +9,14 @@ router= APIRouter()
 
 #GET Request Method
 @router.get("/students")
-async def get_students():
-    students=list_serial(collection_name.find())
-    return students
+async def get_students(country: str = None, age: int =None):
+    query = {}
+    if country:
+        query["address.country"] = country
+    if age:
+        query["age"] = {"$gte": age}
+    students = list_serial(collection_name.find(query))
+    return {"data": students}
 
 
 #POST Request method
@@ -20,89 +25,98 @@ async def post_students(student: Student):
     student_dict=student.dict()
     student_dict['address']=student.address.dict()
     collection_name.insert_one(student.dict())
+    return {"message": "Student added successfully"}
 
 
 #GET BY ID Request method
 @router.get("/students/{id}")
 async def get_student_by_id(id: str):
     try:
-        # Check if the provided student_id is a valid ObjectId
         if not ObjectId.is_valid(id):
             raise HTTPException(status_code=400, detail="Invalid student ID")
 
-        # Query the MongoDB collection to find the student by ID
         student_data = collection_name.find_one({"_id": ObjectId(id)})
 
-        # If student with provided ID doesn't exist, return 404 Not Found
         if student_data is None:
             raise HTTPException(status_code=404, detail="Student not found")
 
-        # Convert ObjectId to string
         student_data['_id'] = str(student_data['_id'])
 
-        # Return the student data
         return student_data
     except Exception as e:
-        # Handle any other unexpected errors
         raise HTTPException(status_code=500, detail="Internal server error")
     
-#PATCH Request Method
-# @router.patch("/students/{id}")
-# async def update_student_by_id(id: str, student: Student):
-#     try:
-#         if not ObjectId.is_valid(id):
-#             raise HTTPException(status_code=400, detail="Invalid student ID")
-        
-#         # Update the student in the MongoDB collection
-#         result = collection_name.update_one({"_id": ObjectId(id)}, {"$set": student.dict()})
 
-
-#     except Exception as e:
-#         # Handle any other unexpected errors
-#         raise HTTPException(status_code=500, detail="Internal server error")
+ 
+# PATCH Request Method
 @router.patch("/students/{id}")
-async def update_student_by_id(id: str, student_data: UpdateStudent):
+async def update_student_by_id(id: str, student: StudentUpdate):
     try:
         if not ObjectId.is_valid(id):
             raise HTTPException(status_code=400, detail="Invalid student ID")
         
-        student=collection_name.find_one({"_id": ObjectId(id)})
-
-        if student_data.name:
-            student.name = student_data.name
-        if student_data.age:
-            student.age = student_data.age
-        if student_data.address:
-            if student_data.address.city:
-                student.address.city = student_data.address.city
-            if student_data.address.country:
-                student.address.country = student_data.address.country
-
-        # Save the updated student object back to the database
-        student.save()
-
+        update_dict = student.dict(exclude_unset=True)
         
+        result = collection_name.update_one({"_id": ObjectId(id)}, {"$set": update_dict})
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Student not found")
+
+        return {"message": "Student updated successfully"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# @router.patch("/students/{id}")
+# async def update_student_by_id(id: str, student: StudentUpdate):
+    try:
+        if not ObjectId.is_valid(id):
+            raise HTTPException(status_code=400, detail="Invalid student ID")
+
+        update_dict = {}
+        
+        # Update name if provided
+        if student.name is not None:
+            update_dict["name"] = student.name
+        
+        # Update age if provided
+        if student.age is not None:
+            update_dict["age"] = student.age
+
+        # Update address if provided
+        if student.address is not None:
+            update_dict["address"] = student.address.dict()
+
+        if not update_dict:
+            raise HTTPException(status_code=400, detail="No fields provided for update")
+
+        # Update the student in the MongoDB collection
+        result = collection_name.update_one({"_id": ObjectId(id)}, {"$set": update_dict})
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Student not found")
+
+        return {"message": "Student updated successfully"}
+
+    except Exception as e:
+        # Handle any other unexpected errors
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 
 # DELETE Request method to delete a student by ID
 @router.delete("/students/{id}")
 async def delete_student_by_id(id: str):
     try:
-        # Check if the provided student_id is a valid ObjectId
         if not ObjectId.is_valid(id):
             raise HTTPException(status_code=400, detail="Invalid student ID")
 
-        # Delete the student from the MongoDB collection
         result = collection_name.delete_one({"_id": ObjectId(id)})
 
-        # If no matching student was found, return 404 Not Found
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Student not found")
 
-        # Return a success message
         return {"message": "Student deleted successfully"}
     except Exception as e:
-        # Handle any other unexpected errors
         raise HTTPException(status_code=500, detail="Internal server error")

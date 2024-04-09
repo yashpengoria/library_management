@@ -10,6 +10,10 @@ router= APIRouter()
 async def read_root():
     return {"message": "Hello World"}
 
+@router.head("/")
+async def read_root():
+    return
+
 #GET Request Method
 @router.get("/students")
 async def get_students(country: str = None, age: int =None):

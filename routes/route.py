@@ -6,9 +6,9 @@ from bson import ObjectId
 
 router= APIRouter()
 
-@router.get("/")
-async def read_root():
-    return {"message": "Hello World"}
+# @router.get("/")
+# async def read_root():
+#     return {"message": "Hello World"}
 
 @router.head("/")
 async def read_root():

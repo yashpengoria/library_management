@@ -8,12 +8,8 @@ router= APIRouter()
 
 @router.get("/", include_in_schema=False)
 async def read_root():
-    return {"message": "Hello World"}
+    return {"message": "Go to https://library-management-gj13.onrender.com/docs to check out APIs"}
 
-
-# @router.head("/")
-# async def read_root():
-#     return
 
 #GET Request Method
 @router.get("/students")
@@ -76,8 +72,7 @@ async def update_student_by_id(id: str, student: StudentUpdate):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-# @router.patch("/students/{id}")
-# async def update_student_by_id(id: str, student: StudentUpdate):
+
     try:
         if not ObjectId.is_valid(id):
             raise HTTPException(status_code=400, detail="Invalid student ID")

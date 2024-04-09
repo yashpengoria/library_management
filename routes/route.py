@@ -6,9 +6,10 @@ from bson import ObjectId
 
 router= APIRouter()
 
-@router.get("/")
+@router.get("/", include_in_schema=False)
 async def read_root():
     return {"message": "Hello World"}
+
 
 # @router.head("/")
 # async def read_root():

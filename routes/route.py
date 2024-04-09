@@ -72,42 +72,6 @@ async def update_student_by_id(id: str, student: StudentUpdate):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-
-    try:
-        if not ObjectId.is_valid(id):
-            raise HTTPException(status_code=400, detail="Invalid student ID")
-
-        update_dict = {}
-        
-        # Update name if provided
-        if student.name is not None:
-            update_dict["name"] = student.name
-        
-        # Update age if provided
-        if student.age is not None:
-            update_dict["age"] = student.age
-
-        # Update address if provided
-        if student.address is not None:
-            update_dict["address"] = student.address.dict()
-
-        if not update_dict:
-            raise HTTPException(status_code=400, detail="No fields provided for update")
-
-        # Update the student in the MongoDB collection
-        result = collection_name.update_one({"_id": ObjectId(id)}, {"$set": update_dict})
-        
-        if result.modified_count == 0:
-            raise HTTPException(status_code=404, detail="Student not found")
-
-        return {"message": "Student updated successfully"}
-
-    except Exception as e:
-        # Handle any other unexpected errors
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
-
 # DELETE Request method to delete a student by ID
 @router.delete("/students/{id}")
 async def delete_student_by_id(id: str):
